@@ -45,6 +45,35 @@ describe("Angpow", function () {
 
         })
 
+        it("should not create angpow with same id", async function () {
+
+            const { Angpow, owner, donator, recipient } = await loadFixture(deploy);
+    
+            const id = 0;
+            const token = ethers.ZeroAddress;
+            const tokenAmount = ethers.parseEther("10");
+            const quantity = 1;
+
+            await Angpow.connect(donator).createAngpow(
+                id,
+                token,
+                tokenAmount,
+                quantity,
+                { value: tokenAmount }
+            )
+    
+            await expect(
+                Angpow.connect(donator).createAngpow(
+                    id,
+                    token,
+                    tokenAmount,
+                    quantity,
+                    { value: tokenAmount }
+                )
+            ).to.be.revertedWith("Id used.")
+
+        })
+
     })
 
 

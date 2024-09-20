@@ -38,6 +38,8 @@ contract AngpowContract is OwnableUpgradeable, ReentrancyGuardUpgradeable, Acces
     }
 
     function createAngpow(uint256 _id, address _token, uint256 _tokenAmount, uint256 _quantity) external payable {
+        require(angpowOf[_id].donator == address(0), "Id used.");
+
         if(_token == address(0)) {
             require(msg.value >= _tokenAmount, "Insufficient ether.");
         } else {
