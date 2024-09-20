@@ -5,12 +5,12 @@ const { expect } = require("chai");
 describe("Angpow", function () {
 
     async function deploy() {
-        const [owner, donator, recipient] = await ethers.getSigners();
+        const [owner, donator, recipient, admin] = await ethers.getSigners();
 
         const AngpowContract = await ethers.getContractFactory("AngpowContract");
         const Angpow = await upgrades.deployProxy(AngpowContract);
 
-        return { Angpow, owner, donator, recipient };
+        return { Angpow, owner, donator, recipient, admin };
     }
 
 
@@ -69,6 +69,42 @@ describe("Angpow", function () {
     
             await expect(
                 Angpow.connect(owner).receiveAngpow(
+                    id,
+                    recipient.address
+                )
+            ).to.emit(
+                Angpow, "AngpowReceived"
+            ).withArgs(
+                recipient.address,
+                id,
+                token,
+                tokenAmount,
+                quantity
+            )
+
+        })
+
+        it("should able to grant admin role to receive angpow", async function () {
+
+            const { Angpow, owner, donator, recipient, admin } = await loadFixture(deploy);
+    
+            const id = 0;
+            const token = ethers.ZeroAddress;
+            const tokenAmount = ethers.parseEther("10");
+            const quantity = 1;
+
+            await Angpow.connect(donator).createAngpow(
+                id,
+                token,
+                tokenAmount,
+                quantity,
+                { value: tokenAmount }
+            )
+
+            await Angpow.connect(owner).addAdmin(admin.address);
+    
+            await expect(
+                Angpow.connect(admin).receiveAngpow(
                     id,
                     recipient.address
                 )
