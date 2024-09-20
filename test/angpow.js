@@ -113,6 +113,35 @@ describe("Angpow", function () {
 
         })
 
+        it("should send ether when receive angpow", async function () {
+
+            const { Angpow, owner, donator, recipient } = await loadFixture(deploy);
+    
+            const id = 0;
+            const token = ethers.ZeroAddress;
+            const tokenAmount = ethers.parseEther("10");
+            const quantity = 1;
+
+            await Angpow.connect(donator).createAngpow(
+                id,
+                token,
+                tokenAmount,
+                quantity,
+                { value: tokenAmount }
+            )
+    
+            await expect(
+                Angpow.connect(owner).receiveAngpow(
+                    id,
+                    recipient.address
+                )
+            ).changeEtherBalances(
+                [Angpow.target, recipient.address],
+                [-tokenAmount, tokenAmount]
+            )
+
+        })
+
         it("should able to grant admin role to receive angpow", async function () {
 
             const { Angpow, owner, donator, recipient, admin } = await loadFixture(deploy);
