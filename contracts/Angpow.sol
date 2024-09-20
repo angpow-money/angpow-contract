@@ -41,7 +41,7 @@ contract AngpowContract is OwnableUpgradeable, ReentrancyGuardUpgradeable, Acces
         if(_token == address(0)) {
             require(msg.value >= _tokenAmount, "Insufficient ether.");
         } else {
-            IERC20(token).transferFrom(msg.sender, address(this), _tokenAmount);
+            IERC20(_token).transferFrom(msg.sender, address(this), _tokenAmount);
         }
 
         angpowOf[_id] = Angpow(msg.sender, _id, block.timestamp, _token, _tokenAmount, _quantity, 0);
