@@ -11,3 +11,8 @@ REPORT_GAS=true npx hardhat test
 npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/Lock.js
 ```
+
+
+# angpow contract
+0x353fCB9FE729a892E9716fcC142262d7635DFF6f
+

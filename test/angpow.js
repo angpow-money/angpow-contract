@@ -8,7 +8,7 @@ describe("Angpow", function () {
         const [owner, donator, recipient] = await ethers.getSigners();
 
         const AngpowContract = await ethers.getContractFactory("AngpowContract");
-        const Angpow = await AngpowContract.deploy();
+        const Angpow = await upgrades.deployProxy(AngpowContract);
 
         return { Angpow, owner, donator, recipient };
     }
