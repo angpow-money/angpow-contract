@@ -55,17 +55,22 @@ contract AngpowContract is OwnableUpgradeable, ReentrancyGuardUpgradeable, Acces
 
     function receiveAngpow(uint256 _id, address _recipient) external onlyRole(ADMIN_ROLE) {
         
-        require(angpowOf[_id].quantity < angpowOf[_id].claimed_count, "Fully claimed");
+        require(angpowOf[_id].claimed_count < angpowOf[_id].quantity , "Fully claimed.");
         angpowOf[_id].claimed_count += 1;
         uint256 amount = angpowOf[_id].token_amount / angpowOf[_id].quantity;
         if(angpowOf[_id].token == address(0)) {
             (bool sent, ) = _recipient.call{value: amount}("");
-            require(sent, "Failed to send Ether");
+            require(sent, "Failed to send Ether.");
         } else {
             IERC20(angpowOf[_id].token).transfer(_recipient, amount);
         }
 
         emit AngpowReceived(_recipient, _id, angpowOf[_id].token, amount, angpowOf[_id].claimed_count);
+    }
+
+    function withdrawEth() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        (bool sent, ) = msg.sender.call{value: address(this).balance}("");
+        require(sent, "Failed to send Ether.");
     }
 
 }
