@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-
+import "./RandomNumberVrf.sol";
 
 contract AngpowContractVrf is ReentrancyGuardUpgradeable, AccessControlUpgradeable {
 
@@ -22,6 +22,8 @@ contract AngpowContractVrf is ReentrancyGuardUpgradeable, AccessControlUpgradeab
 
     mapping(uint => Angpow) public angpowOf;
 
+    RandomNumberVrf public RandomNumberContract;
+
     event AngpowCreated(address donator, uint256 id, address token, uint256 token_amount, uint256 quantity, bool is_random);
     event AngpowReceived(address recipient, uint256 id, address token, uint256 token_amount, uint256 index);
 
@@ -32,10 +34,18 @@ contract AngpowContractVrf is ReentrancyGuardUpgradeable, AccessControlUpgradeab
         _disableInitializers();
     }
 
-    function initialize() public initializer {
+    function initialize(
+        uint256 subscriptionId,
+        address vrfCoordinator,
+        bytes32 keyHash
+    ) public initializer {
         __AccessControl_init();
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(ADMIN_ROLE, msg.sender);
+
+        RandomNumberContract = new RandomNumberVrf(subscriptionId, vrfCoordinator, keyHash, address(this));
+        _grantRole(ADMIN_ROLE, address(RandomNumberContract));
+
     }
 
     function createAngpow(uint256 _id, address _token, uint256 _tokenAmount, uint256 _quantity, bool _isRandom) external payable {
@@ -63,6 +73,27 @@ contract AngpowContractVrf is ReentrancyGuardUpgradeable, AccessControlUpgradeab
 
         if(angpowOf[_id].is_random) {
 
+            if(angpowOf[_id].claimed_count == angpowOf[_id].quantity) {
+
+                uint256 amount = angpowOf[_id].token_remained;
+                angpowOf[_id].token_remained = 0;
+
+                if(angpowOf[_id].token == address(0)) {
+                    (bool sent, ) = _recipient.call{value: amount}("");
+                    require(sent, "Failed to send Ether.");
+                } else {
+                    IERC20(angpowOf[_id].token).transfer(_recipient, amount);
+                }
+                emit AngpowReceived(_recipient, _id, angpowOf[_id].token, amount, angpowOf[_id].claimed_count);
+
+            } else {
+                RandomNumberContract.requestRandomWords(
+                    false,
+                    _id,
+                    _recipient
+                );
+            }
+
         } else {
             uint256 amount = angpowOf[_id].token_amount / angpowOf[_id].quantity;
             angpowOf[_id].token_remained -= amount;
@@ -76,6 +107,21 @@ contract AngpowContractVrf is ReentrancyGuardUpgradeable, AccessControlUpgradeab
         }
 
     }
+
+    function randomNumberCallback(uint256 _id, address _recipient, uint256 _random) external onlyRole(ADMIN_ROLE) {
+
+        uint256 amount = _random % (angpowOf[_id].token_remained / (angpowOf[_id].quantity - angpowOf[_id].claimed_count));
+        angpowOf[_id].token_remained -= amount;
+
+        if(angpowOf[_id].token == address(0)) {
+            (bool sent, ) = _recipient.call{value: amount}("");
+            require(sent, "Failed to send Ether.");
+        } else {
+            IERC20(angpowOf[_id].token).transfer(_recipient, amount);
+        }
+        emit AngpowReceived(_recipient, _id, angpowOf[_id].token, amount, angpowOf[_id].claimed_count);
+
+    } 
 
     function withdrawEth() external onlyRole(DEFAULT_ADMIN_ROLE) {
         (bool sent, ) = msg.sender.call{value: address(this).balance}("");
