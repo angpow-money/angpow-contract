@@ -3,7 +3,7 @@ const tokenAmount = ethers.parseEther("0.00001");
 async function main() {
   const Angpow = await ethers.getContractFactory("AngpowContract");
   // const angpow = Angpow.attach("0x353fCB9FE729a892E9716fcC142262d7635DFF6f");
-  const angpow = Angpow.attach("0x25a25506B36626d328B1ebE0D16aEF2d3713CE91");
+  const angpow = Angpow.attach(process.env.ANGPOW);
   const sig = await angpow.createAngpow(
     1,
     ethers.ZeroAddress,
