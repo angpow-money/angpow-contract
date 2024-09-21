@@ -38,7 +38,7 @@ describe("Angpow", function () {
 
         await Mock.connect(owner).fundSubscription(
             subsId,
-            "100000000000000000000"
+            "1000000000000000000000"
         );
 
 
@@ -49,13 +49,21 @@ describe("Angpow", function () {
             "0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae"
         ]);
 
-        return { Angpow, owner, donator, recipient, admin, Mock };
+        const randomNumberContractAddress = await Angpow.RandomNumberContract();
+        const RNContract = await ethers.getContractFactory("RandomNumberMachineMock");
+        const RN = RNContract.attach(randomNumberContractAddress);
+        await Mock.connect(owner).addConsumer(
+            subsId,
+            RN.target,
+        )
+
+        return { Angpow, owner, donator, recipient, admin, Mock, RN };
     }
 
 
     describe("work work work", function () {
 
-        it.only("www 1", async function() {
+        it("www 1", async function() {
 
             const { Angpow, owner, donator, recipient } = await loadFixture(deploy);
             
@@ -89,6 +97,155 @@ describe("Angpow", function () {
                 quantity
             )
 
+
+        })
+
+        it.only("www 2", async function() {
+
+            const { Angpow, owner, donator, recipient, Mock, RN } = await loadFixture(deploy);
+            
+            const id = 0;
+            const token = ethers.ZeroAddress;
+            const tokenAmount = ethers.parseEther("10");
+            const quantity = 5;
+            const isRandom = true;
+
+            await Angpow.connect(donator).createAngpow(
+                id,
+                token,
+                tokenAmount,
+                quantity,
+                isRandom,
+                { value: tokenAmount }
+            )
+
+
+            
+            // console.log(1, await RN.s_requestId());
+
+            await Angpow.connect(owner).receiveAngpow(
+                id,
+                recipient.address
+            )
+
+            // console.log(2, await RN.s_requestId());
+
+            /// for testnet and local mock test onyl
+            const requestId = await RN.s_requestId();
+            await Mock.connect(owner).fulfillRandomWords(
+                requestId,
+                RN.target
+            )
+            ///
+
+            // console.log(3, await RN.s_requestId());
+
+            console.log();
+
+            let angpownow = await Angpow.angpowOf(id);
+            console.log('claim', ethers.formatEther((await Angpow.angpowOf(id))[7]) );
+
+            const loop = Number(angpownow[5] - angpownow[6]) - 1;
+            for(let i=0; i<loop; i++) {
+
+                await Angpow.connect(owner).receiveAngpow(
+                    id,
+                    recipient.address
+                )
+
+                /// for testnet and local mock test onyl
+                const requestId = await RN.s_requestId();
+                await Mock.connect(owner).fulfillRandomWords(
+                    requestId,
+                    RN.target
+                )
+                ///
+
+                // console.log(await Angpow.angpowOf(id));
+                console.log('claim', ethers.formatEther((await Angpow.angpowOf(id))[7]) );
+
+            }
+
+            await Angpow.connect(owner).receiveAngpow(
+                id,
+                recipient.address
+            )
+            console.log('claim', ethers.formatEther((await Angpow.angpowOf(id))[7]) );
+
+        })
+
+
+        it.only("www 3", async function() {
+
+            const { Angpow, owner, donator, recipient, Mock, RN } = await loadFixture(deploy);
+            
+            const id = 0;
+            const token = ethers.ZeroAddress;
+            const tokenAmount = ethers.parseEther("10");
+            const quantity = 10;
+            const isRandom = true;
+
+            await Angpow.connect(donator).createAngpow(
+                id,
+                token,
+                tokenAmount,
+                quantity,
+                isRandom,
+                { value: tokenAmount }
+            )
+
+
+            
+            // console.log(1, await RN.s_requestId());
+
+            await Angpow.connect(owner).receiveAngpow(
+                id,
+                recipient.address
+            )
+
+            // console.log(2, await RN.s_requestId());
+
+            /// for testnet and local mock test onyl
+            const requestId = await RN.s_requestId();
+            await Mock.connect(owner).fulfillRandomWords(
+                requestId,
+                RN.target
+            )
+            ///
+
+            // console.log(3, await RN.s_requestId());
+
+            console.log();
+
+            let angpownow = await Angpow.angpowOf(id);
+            console.log('claim', ethers.formatEther((await Angpow.angpowOf(id))[7]) );
+
+            const loop = Number(angpownow[5] - angpownow[6]) - 1;
+            for(let i=0; i<loop; i++) {
+
+                await Angpow.connect(owner).receiveAngpow(
+                    id,
+                    recipient.address
+                )
+
+                /// for testnet and local mock test onyl
+                const requestId = await RN.s_requestId();
+                await Mock.connect(owner).fulfillRandomWords(
+                    requestId,
+                    RN.target
+                )
+                ///
+
+                // console.log(await Angpow.angpowOf(id));
+                console.log('claim', ethers.formatEther((await Angpow.angpowOf(id))[7]) );
+
+            }
+
+            await Angpow.connect(owner).receiveAngpow(
+                id,
+                recipient.address
+            )
+            console.log('claim', ethers.formatEther((await Angpow.angpowOf(id))[7]) );
 
         })
 
