@@ -22,6 +22,9 @@ npx hardhat ignition deploy ./ignition/modules/Lock.js
 
 
 # angpow vrf 
-0x34Fb2110daB60DBBA3a3a226Cb441E2eB19eF0F0
+0x34Fb2110daB60DBBA3a3a226Cb441E2eB19eF0F0 (deprecated)
+0x16F8DB86E95C9D9c76e76Da3c671af4bF87CE1C0
+
 # angpow vrf random number contract
-0xCbE4F91Cf6FcCF2003f4d61a11d294B30E51585d
+0xCbE4F91Cf6FcCF2003f4d61a11d294B30E51585d (deprecated)
+0xC12a512551B2EB71E9e98ED9Ba5E86D61A543cAe

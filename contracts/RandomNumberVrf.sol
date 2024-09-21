@@ -26,7 +26,8 @@ contract RandomNumberVrf is VRFConsumerBaseV2Plus {
 
     bytes32 immutable s_keyHash;
 
-    uint32 public callbackGasLimit = 100000;
+    // uint32 public callbackGasLimit = 100000;
+    uint32 public callbackGasLimit = 2000000;
 
     uint16 public requestConfirmations = 3;
 
@@ -85,11 +86,11 @@ contract RandomNumberVrf is VRFConsumerBaseV2Plus {
         uint256[] calldata _randomWords
     ) internal override {
 
-        Angpow.randomNumberCallback(
-            requestOf[_requestId].angpowId,
-            requestOf[_requestId].recipient,
-            _randomWords[0]
-        );
+        // Angpow.randomNumberCallback(
+        //     requestOf[_requestId].angpowId,
+        //     requestOf[_requestId].recipient,
+        //     _randomWords[0]
+        // );
 
         s_randomWords = _randomWords;
         emit RequestFulfilled(_requestId, _randomWords);

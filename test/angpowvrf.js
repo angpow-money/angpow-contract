@@ -63,7 +63,7 @@ describe("Angpow", function () {
 
     describe("work work work", function () {
 
-        it("www 1", async function() {
+        it.only("www 1", async function() {
 
             const { Angpow, owner, donator, recipient } = await loadFixture(deploy);
             
